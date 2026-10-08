@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wastecls"
+version = "2.0.0"
+description = "AlexNet waste image classification on COCO-format data (TrashNet)"
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.1",
+    "torchvision>=0.16",
+    "numpy",
+    "pillow",
+    "scikit-learn",
+    "scikit-image",
+    "matplotlib",
+    "joblib",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -12,3 +12,11 @@ __pycache__/
 *.pth
 
 .DS_Store
+
+# 数据集、虚拟环境与大模型文件
+data/
+.venv/
+*.egg-info/
+*.pt
+*.joblib
+.pytest_cache/
