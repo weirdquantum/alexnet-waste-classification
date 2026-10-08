@@ -1,0 +1,14 @@
+# 报告、课程讲义与提交压缩包不公开
+*.pdf
+*.docx
+*.zip
+
+# Python / Jupyter
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# 训练产物（AlexNet 权重约 200 MB）
+*.pth
+
+.DS_Store
