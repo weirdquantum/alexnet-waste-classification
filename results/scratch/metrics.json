@@ -1,0 +1,130 @@
+{
+  "preset": "scratch",
+  "config": {
+    "head_lr_mult": 1.0,
+    "model": "alexnet",
+    "img_size": 224,
+    "normalize": "imagenet",
+    "augment": true,
+    "optimizer": "adamw",
+    "lr": 0.0001,
+    "weight_decay": 0.05,
+    "label_smoothing": 0.1,
+    "scheduler": "cosine",
+    "warmup_epochs": 3,
+    "epochs": 100,
+    "patience": 25,
+    "preset": "scratch",
+    "data_dir": "data/trashnet",
+    "batch_size": 32,
+    "num_workers": 2,
+    "seed": 0,
+    "device": "auto",
+    "out": "results/scratch"
+  },
+  "best_epoch": 99,
+  "epochs_run": 100,
+  "train_minutes": 16.1,
+  "num_params_m": 57.0,
+  "val_at_best": {
+    "epoch": 99,
+    "train_loss": 0.6162497813051397,
+    "train_acc": 0.9261363636363636,
+    "val_loss": 0.42314722512831476,
+    "val_acc": 0.8786279683377308,
+    "val_macro_f1": 0.8662406617611542
+  },
+  "test": {
+    "loss": 0.5073685964579304,
+    "accuracy": 0.8359788359788359,
+    "macro_f1": 0.823005267393237,
+    "per_class": {
+      "cardboard": {
+        "precision": 0.9622641509433962,
+        "recall": 0.85,
+        "f1": 0.9026548672566371,
+        "support": 60
+      },
+      "glass": {
+        "precision": 0.7808219178082192,
+        "recall": 0.76,
+        "f1": 0.7702702702702703,
+        "support": 75
+      },
+      "metal": {
+        "precision": 0.8032786885245902,
+        "recall": 0.8032786885245902,
+        "f1": 0.8032786885245902,
+        "support": 61
+      },
+      "paper": {
+        "precision": 0.9130434782608695,
+        "recall": 0.9438202247191011,
+        "f1": 0.9281767955801105,
+        "support": 89
+      },
+      "plastic": {
+        "precision": 0.7837837837837838,
+        "recall": 0.8055555555555556,
+        "f1": 0.7945205479452054,
+        "support": 72
+      },
+      "trash": {
+        "precision": 0.68,
+        "recall": 0.8095238095238095,
+        "f1": 0.7391304347826086,
+        "support": 21
+      }
+    },
+    "confusion_matrix": [
+      [
+        51,
+        1,
+        2,
+        3,
+        3,
+        0
+      ],
+      [
+        0,
+        57,
+        7,
+        3,
+        7,
+        1
+      ],
+      [
+        0,
+        5,
+        49,
+        0,
+        5,
+        2
+      ],
+      [
+        1,
+        1,
+        1,
+        84,
+        1,
+        1
+      ],
+      [
+        0,
+        7,
+        1,
+        2,
+        58,
+        4
+      ],
+      [
+        1,
+        2,
+        1,
+        0,
+        0,
+        17
+      ]
+    ]
+  }
+}
