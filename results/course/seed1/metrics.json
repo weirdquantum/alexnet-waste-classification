@@ -1,0 +1,133 @@
+{
+  "preset": "course",
+  "seed": 1,
+  "config": {
+    "head_lr_mult": 1.0,
+    "init": "default",
+    "model": "alexnet",
+    "img_size": 192,
+    "normalize": "unit",
+    "augment": false,
+    "optimizer": "adam",
+    "lr": 0.001,
+    "weight_decay": 0.0,
+    "label_smoothing": 0.0,
+    "scheduler": "none",
+    "warmup_epochs": 0,
+    "epochs": 30,
+    "patience": 0,
+    "preset": "course",
+    "data_dir": "data/trashnet",
+    "out": "/content/drive/MyDrive/alexnet-waste-results/course/seed1",
+    "batch_size": 32,
+    "num_workers": 2,
+    "seed": 1,
+    "device": "auto",
+    "cache_size": 219
+  },
+  "best_epoch": 2,
+  "epochs_run": 30,
+  "train_minutes": 0.3,
+  "num_params_m": 57.0,
+  "val_at_best": {
+    "epoch": 2,
+    "train_loss": 1.7331467151641846,
+    "train_acc": 0.22102272727272726,
+    "val_loss": 1.726410522565737,
+    "val_acc": 0.2445054945054945,
+    "val_macro_f1": 0.06548933038999265
+  },
+  "test": {
+    "loss": 1.725163390559535,
+    "accuracy": 0.24193548387096775,
+    "macro_f1": 0.06493506493506494,
+    "per_class": {
+      "cardboard": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 59
+      },
+      "glass": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 77
+      },
+      "metal": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 59
+      },
+      "paper": {
+        "precision": 0.24193548387096775,
+        "recall": 1.0,
+        "f1": 0.38961038961038963,
+        "support": 90
+      },
+      "plastic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 66
+      },
+      "trash": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 21
+      }
+    },
+    "confusion_matrix": [
+      [
+        0,
+        0,
+        0,
+        59,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        77,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        59,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        90,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        66,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        21,
+        0,
+        0
+      ]
+    ]
+  }
+}

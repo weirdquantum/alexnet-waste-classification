@@ -1,0 +1,32 @@
+device=cuda  train=1785  val=364  classes=['cardboard', 'glass', 'metal', 'paper', 'plastic', 'trash']
+epoch   1  train loss 1.291 acc 0.570  val loss 0.764 acc 0.717 f1 0.678  *
+epoch   2  train loss 0.900 acc 0.787  val loss 0.613 acc 0.788 f1 0.740  *
+epoch   3  train loss 0.782 acc 0.845  val loss 0.554 acc 0.835 f1 0.797  *
+epoch   4  train loss 0.713 acc 0.885  val loss 0.523 acc 0.846 f1 0.816  *
+epoch   5  train loss 0.673 acc 0.905  val loss 0.495 acc 0.860 f1 0.836  *
+epoch   6  train loss 0.636 acc 0.927  val loss 0.473 acc 0.871 f1 0.837  *
+epoch   7  train loss 0.598 acc 0.950  val loss 0.460 acc 0.871 f1 0.840  *
+epoch   8  train loss 0.600 acc 0.948  val loss 0.443 acc 0.876 f1 0.848  *
+epoch   9  train loss 0.588 acc 0.953  val loss 0.447 acc 0.874 f1 0.849  *
+epoch  10  train loss 0.571 acc 0.961  val loss 0.424 acc 0.887 f1 0.866  *
+epoch  11  train loss 0.566 acc 0.964  val loss 0.454 acc 0.857 f1 0.815
+epoch  12  train loss 0.541 acc 0.978  val loss 0.433 acc 0.871 f1 0.846
+epoch  13  train loss 0.538 acc 0.978  val loss 0.435 acc 0.876 f1 0.844
+epoch  14  train loss 0.521 acc 0.987  val loss 0.418 acc 0.896 f1 0.876  *
+epoch  15  train loss 0.517 acc 0.986  val loss 0.429 acc 0.876 f1 0.852
+epoch  16  train loss 0.516 acc 0.986  val loss 0.422 acc 0.879 f1 0.855
+epoch  17  train loss 0.513 acc 0.985  val loss 0.414 acc 0.896 f1 0.871
+epoch  18  train loss 0.507 acc 0.989  val loss 0.409 acc 0.896 f1 0.877  *
+epoch  19  train loss 0.507 acc 0.989  val loss 0.415 acc 0.898 f1 0.870
+epoch  20  train loss 0.501 acc 0.988  val loss 0.405 acc 0.893 f1 0.870
+epoch  21  train loss 0.499 acc 0.992  val loss 0.400 acc 0.896 f1 0.868
+epoch  22  train loss 0.494 acc 0.993  val loss 0.402 acc 0.896 f1 0.868
+epoch  23  train loss 0.494 acc 0.993  val loss 0.401 acc 0.896 f1 0.875
+epoch  24  train loss 0.489 acc 0.995  val loss 0.396 acc 0.904 f1 0.880  *
+epoch  25  train loss 0.487 acc 0.995  val loss 0.397 acc 0.896 f1 0.867
+epoch  26  train loss 0.491 acc 0.994  val loss 0.398 acc 0.898 f1 0.870
+epoch  27  train loss 0.488 acc 0.996  val loss 0.398 acc 0.898 f1 0.870
+epoch  28  train loss 0.487 acc 0.995  val loss 0.400 acc 0.898 f1 0.873
+epoch  29  train loss 0.488 acc 0.995  val loss 0.399 acc 0.896 f1 0.868
+epoch  30  train loss 0.486 acc 0.994  val loss 0.399 acc 0.896 f1 0.868
+best epoch 24  test acc 0.8656  macro-F1 0.8542

@@ -1,0 +1,133 @@
+{
+  "preset": "scratch",
+  "seed": 0,
+  "config": {
+    "head_lr_mult": 1.0,
+    "init": "kaiming",
+    "model": "alexnet",
+    "img_size": 224,
+    "normalize": "imagenet",
+    "augment": true,
+    "optimizer": "adamw",
+    "lr": 0.0001,
+    "weight_decay": 0.05,
+    "label_smoothing": 0.1,
+    "scheduler": "cosine",
+    "warmup_epochs": 3,
+    "epochs": 100,
+    "patience": 25,
+    "preset": "scratch",
+    "data_dir": "data/trashnet",
+    "out": "/content/drive/MyDrive/alexnet-waste-results/scratch/seed0",
+    "batch_size": 32,
+    "num_workers": 2,
+    "seed": 0,
+    "device": "auto",
+    "cache_size": 256
+  },
+  "best_epoch": 73,
+  "epochs_run": 98,
+  "train_minutes": 4.6,
+  "num_params_m": 57.0,
+  "val_at_best": {
+    "epoch": 73,
+    "train_loss": 0.6104539979587902,
+    "train_acc": 0.9346590909090909,
+    "val_loss": 0.4692760345700023,
+    "val_acc": 0.8543956043956044,
+    "val_macro_f1": 0.8401401582938371
+  },
+  "test": {
+    "loss": 0.5981684404034768,
+    "accuracy": 0.8010752688172043,
+    "macro_f1": 0.7944534109769323,
+    "per_class": {
+      "cardboard": {
+        "precision": 0.94,
+        "recall": 0.7966101694915254,
+        "f1": 0.8623853211009175,
+        "support": 59
+      },
+      "glass": {
+        "precision": 0.7045454545454546,
+        "recall": 0.8051948051948052,
+        "f1": 0.7515151515151515,
+        "support": 77
+      },
+      "metal": {
+        "precision": 0.7931034482758621,
+        "recall": 0.7796610169491526,
+        "f1": 0.7863247863247863,
+        "support": 59
+      },
+      "paper": {
+        "precision": 0.8469387755102041,
+        "recall": 0.9222222222222223,
+        "f1": 0.8829787234042553,
+        "support": 90
+      },
+      "plastic": {
+        "precision": 0.75,
+        "recall": 0.6818181818181818,
+        "f1": 0.7142857142857143,
+        "support": 66
+      },
+      "trash": {
+        "precision": 0.8333333333333334,
+        "recall": 0.7142857142857143,
+        "f1": 0.7692307692307693,
+        "support": 21
+      }
+    },
+    "confusion_matrix": [
+      [
+        47,
+        1,
+        4,
+        2,
+        5,
+        0
+      ],
+      [
+        1,
+        62,
+        6,
+        1,
+        6,
+        1
+      ],
+      [
+        0,
+        11,
+        46,
+        1,
+        1,
+        0
+      ],
+      [
+        1,
+        1,
+        2,
+        83,
+        2,
+        1
+      ],
+      [
+        1,
+        11,
+        0,
+        8,
+        45,
+        1
+      ],
+      [
+        0,
+        2,
+        0,
+        3,
+        1,
+        15
+      ]
+    ]
+  }
+}

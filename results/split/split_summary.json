@@ -1,0 +1,43 @@
+{
+  "num_images": 2521,
+  "dropped_label_conflicts": [
+    "glass/glass115.jpg",
+    "glass/glass176.jpg",
+    "glass/glass389.jpg",
+    "metal/metal91.jpg",
+    "plastic/plastic152.jpg",
+    "plastic/plastic332.jpg"
+  ],
+  "dedup_threshold": 0.85,
+  "num_groups": 2327,
+  "images_in_multi_image_groups": 304,
+  "largest_group": 20,
+  "train": {
+    "total": 1785,
+    "cardboard": 284,
+    "glass": 354,
+    "metal": 292,
+    "paper": 415,
+    "plastic": 345,
+    "trash": 95
+  },
+  "val": {
+    "total": 364,
+    "cardboard": 60,
+    "glass": 67,
+    "metal": 58,
+    "paper": 89,
+    "plastic": 69,
+    "trash": 21
+  },
+  "test": {
+    "total": 372,
+    "cardboard": 59,
+    "glass": 77,
+    "metal": 59,
+    "paper": 90,
+    "plastic": 66,
+    "trash": 21
+  },
+  "max_test_train_same_class_similarity": 0.848
+}

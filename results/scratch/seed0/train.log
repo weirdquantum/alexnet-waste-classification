@@ -1,0 +1,101 @@
+device=cuda  train=1785  val=364  classes=['cardboard', 'glass', 'metal', 'paper', 'plastic', 'trash']
+epoch   1  train loss 1.743 acc 0.216  val loss 1.660 acc 0.255 f1 0.099  *
+epoch   2  train loss 1.630 acc 0.345  val loss 1.466 acc 0.382 f1 0.302  *
+epoch   3  train loss 1.549 acc 0.401  val loss 1.406 acc 0.437 f1 0.363  *
+epoch   4  train loss 1.499 acc 0.436  val loss 1.344 acc 0.434 f1 0.358
+epoch   5  train loss 1.467 acc 0.463  val loss 1.292 acc 0.464 f1 0.415  *
+epoch   6  train loss 1.416 acc 0.494  val loss 1.305 acc 0.500 f1 0.406
+epoch   7  train loss 1.415 acc 0.489  val loss 1.319 acc 0.467 f1 0.419  *
+epoch   8  train loss 1.375 acc 0.510  val loss 1.222 acc 0.549 f1 0.503  *
+epoch   9  train loss 1.342 acc 0.534  val loss 1.165 acc 0.560 f1 0.495
+epoch  10  train loss 1.311 acc 0.544  val loss 1.069 acc 0.588 f1 0.531  *
+epoch  11  train loss 1.303 acc 0.551  val loss 1.158 acc 0.582 f1 0.536  *
+epoch  12  train loss 1.269 acc 0.581  val loss 1.051 acc 0.596 f1 0.556  *
+epoch  13  train loss 1.243 acc 0.584  val loss 1.003 acc 0.629 f1 0.577  *
+epoch  14  train loss 1.214 acc 0.609  val loss 1.033 acc 0.632 f1 0.604  *
+epoch  15  train loss 1.184 acc 0.623  val loss 1.120 acc 0.582 f1 0.558
+epoch  16  train loss 1.221 acc 0.602  val loss 0.973 acc 0.643 f1 0.597
+epoch  17  train loss 1.172 acc 0.627  val loss 0.926 acc 0.632 f1 0.584
+epoch  18  train loss 1.127 acc 0.657  val loss 1.007 acc 0.657 f1 0.642  *
+epoch  19  train loss 1.141 acc 0.644  val loss 0.852 acc 0.692 f1 0.662  *
+epoch  20  train loss 1.108 acc 0.655  val loss 0.897 acc 0.706 f1 0.684  *
+epoch  21  train loss 1.068 acc 0.690  val loss 0.819 acc 0.690 f1 0.665
+epoch  22  train loss 1.077 acc 0.684  val loss 0.859 acc 0.695 f1 0.679
+epoch  23  train loss 1.086 acc 0.673  val loss 0.814 acc 0.734 f1 0.706  *
+epoch  24  train loss 1.039 acc 0.703  val loss 0.778 acc 0.739 f1 0.700
+epoch  25  train loss 1.017 acc 0.709  val loss 0.708 acc 0.742 f1 0.711  *
+epoch  26  train loss 0.981 acc 0.734  val loss 0.779 acc 0.714 f1 0.683
+epoch  27  train loss 1.020 acc 0.723  val loss 0.715 acc 0.723 f1 0.688
+epoch  28  train loss 0.980 acc 0.740  val loss 0.754 acc 0.747 f1 0.732  *
+epoch  29  train loss 0.955 acc 0.751  val loss 0.700 acc 0.745 f1 0.727
+epoch  30  train loss 0.936 acc 0.757  val loss 0.793 acc 0.703 f1 0.683
+epoch  31  train loss 0.939 acc 0.754  val loss 0.722 acc 0.750 f1 0.719
+epoch  32  train loss 0.915 acc 0.765  val loss 0.668 acc 0.758 f1 0.735  *
+epoch  33  train loss 0.889 acc 0.772  val loss 0.682 acc 0.758 f1 0.714
+epoch  34  train loss 0.901 acc 0.772  val loss 0.688 acc 0.764 f1 0.711
+epoch  35  train loss 0.883 acc 0.781  val loss 0.685 acc 0.772 f1 0.753  *
+epoch  36  train loss 0.888 acc 0.781  val loss 0.684 acc 0.788 f1 0.769  *
+epoch  37  train loss 0.864 acc 0.787  val loss 0.648 acc 0.772 f1 0.731
+epoch  38  train loss 0.846 acc 0.808  val loss 0.606 acc 0.810 f1 0.799  *
+epoch  39  train loss 0.842 acc 0.804  val loss 0.641 acc 0.772 f1 0.760
+epoch  40  train loss 0.822 acc 0.818  val loss 0.655 acc 0.772 f1 0.768
+epoch  41  train loss 0.818 acc 0.828  val loss 0.614 acc 0.791 f1 0.759
+epoch  42  train loss 0.821 acc 0.820  val loss 0.594 acc 0.794 f1 0.790
+epoch  43  train loss 0.793 acc 0.836  val loss 0.576 acc 0.819 f1 0.804  *
+epoch  44  train loss 0.784 acc 0.834  val loss 0.604 acc 0.805 f1 0.786
+epoch  45  train loss 0.775 acc 0.842  val loss 0.609 acc 0.808 f1 0.795
+epoch  46  train loss 0.773 acc 0.841  val loss 0.564 acc 0.830 f1 0.811  *
+epoch  47  train loss 0.776 acc 0.842  val loss 0.591 acc 0.802 f1 0.774
+epoch  48  train loss 0.773 acc 0.850  val loss 0.541 acc 0.819 f1 0.795
+epoch  49  train loss 0.748 acc 0.858  val loss 0.578 acc 0.775 f1 0.740
+epoch  50  train loss 0.729 acc 0.863  val loss 0.589 acc 0.794 f1 0.753
+epoch  51  train loss 0.751 acc 0.853  val loss 0.578 acc 0.799 f1 0.753
+epoch  52  train loss 0.735 acc 0.865  val loss 0.550 acc 0.813 f1 0.798
+epoch  53  train loss 0.710 acc 0.880  val loss 0.543 acc 0.816 f1 0.792
+epoch  54  train loss 0.707 acc 0.890  val loss 0.539 acc 0.824 f1 0.804
+epoch  55  train loss 0.687 acc 0.891  val loss 0.563 acc 0.813 f1 0.794
+epoch  56  train loss 0.695 acc 0.881  val loss 0.500 acc 0.830 f1 0.810
+epoch  57  train loss 0.715 acc 0.870  val loss 0.557 acc 0.799 f1 0.780
+epoch  58  train loss 0.691 acc 0.881  val loss 0.538 acc 0.827 f1 0.816  *
+epoch  59  train loss 0.691 acc 0.889  val loss 0.506 acc 0.835 f1 0.820  *
+epoch  60  train loss 0.691 acc 0.894  val loss 0.512 acc 0.819 f1 0.802
+epoch  61  train loss 0.668 acc 0.898  val loss 0.515 acc 0.830 f1 0.807
+epoch  62  train loss 0.662 acc 0.902  val loss 0.523 acc 0.813 f1 0.788
+epoch  63  train loss 0.665 acc 0.903  val loss 0.513 acc 0.830 f1 0.815
+epoch  64  train loss 0.654 acc 0.904  val loss 0.508 acc 0.835 f1 0.818
+epoch  65  train loss 0.647 acc 0.914  val loss 0.489 acc 0.832 f1 0.809
+epoch  66  train loss 0.652 acc 0.901  val loss 0.507 acc 0.827 f1 0.810
+epoch  67  train loss 0.627 acc 0.928  val loss 0.492 acc 0.841 f1 0.822  *
+epoch  68  train loss 0.637 acc 0.920  val loss 0.494 acc 0.832 f1 0.816
+epoch  69  train loss 0.620 acc 0.925  val loss 0.490 acc 0.841 f1 0.821
+epoch  70  train loss 0.649 acc 0.911  val loss 0.495 acc 0.830 f1 0.812
+epoch  71  train loss 0.630 acc 0.924  val loss 0.473 acc 0.846 f1 0.833  *
+epoch  72  train loss 0.623 acc 0.918  val loss 0.469 acc 0.849 f1 0.837  *
+epoch  73  train loss 0.610 acc 0.935  val loss 0.469 acc 0.854 f1 0.840  *
+epoch  74  train loss 0.614 acc 0.927  val loss 0.473 acc 0.854 f1 0.838
+epoch  75  train loss 0.623 acc 0.925  val loss 0.474 acc 0.854 f1 0.839
+epoch  76  train loss 0.612 acc 0.928  val loss 0.478 acc 0.843 f1 0.830
+epoch  77  train loss 0.617 acc 0.925  val loss 0.484 acc 0.849 f1 0.831
+epoch  78  train loss 0.607 acc 0.936  val loss 0.481 acc 0.835 f1 0.817
+epoch  79  train loss 0.622 acc 0.923  val loss 0.488 acc 0.830 f1 0.814
+epoch  80  train loss 0.609 acc 0.927  val loss 0.489 acc 0.838 f1 0.825
+epoch  81  train loss 0.592 acc 0.947  val loss 0.490 acc 0.835 f1 0.820
+epoch  82  train loss 0.607 acc 0.929  val loss 0.499 acc 0.835 f1 0.820
+epoch  83  train loss 0.607 acc 0.928  val loss 0.477 acc 0.841 f1 0.826
+epoch  84  train loss 0.603 acc 0.935  val loss 0.488 acc 0.830 f1 0.815
+epoch  85  train loss 0.591 acc 0.939  val loss 0.481 acc 0.832 f1 0.820
+epoch  86  train loss 0.587 acc 0.945  val loss 0.476 acc 0.846 f1 0.830
+epoch  87  train loss 0.596 acc 0.936  val loss 0.470 acc 0.846 f1 0.831
+epoch  88  train loss 0.577 acc 0.948  val loss 0.469 acc 0.835 f1 0.818
+epoch  89  train loss 0.584 acc 0.943  val loss 0.468 acc 0.849 f1 0.832
+epoch  90  train loss 0.581 acc 0.946  val loss 0.464 acc 0.852 f1 0.836
+epoch  91  train loss 0.595 acc 0.934  val loss 0.469 acc 0.852 f1 0.837
+epoch  92  train loss 0.576 acc 0.948  val loss 0.467 acc 0.852 f1 0.837
+epoch  93  train loss 0.579 acc 0.953  val loss 0.467 acc 0.852 f1 0.839
+epoch  94  train loss 0.587 acc 0.945  val loss 0.468 acc 0.854 f1 0.839
+epoch  95  train loss 0.582 acc 0.945  val loss 0.467 acc 0.854 f1 0.839
+epoch  96  train loss 0.583 acc 0.944  val loss 0.468 acc 0.854 f1 0.839
+epoch  97  train loss 0.584 acc 0.944  val loss 0.467 acc 0.854 f1 0.839
+epoch  98  train loss 0.577 acc 0.948  val loss 0.467 acc 0.854 f1 0.839
+early stopping after 98 epochs
+best epoch 73  test acc 0.8011  macro-F1 0.7945

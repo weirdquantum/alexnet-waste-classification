@@ -1,0 +1,133 @@
+{
+  "preset": "finetune",
+  "seed": 1,
+  "config": {
+    "head_lr_mult": 20,
+    "init": "kaiming",
+    "model": "alexnet_pretrained",
+    "img_size": 224,
+    "normalize": "imagenet",
+    "augment": true,
+    "optimizer": "adamw",
+    "lr": 5e-05,
+    "weight_decay": 0.05,
+    "label_smoothing": 0.1,
+    "scheduler": "cosine",
+    "warmup_epochs": 1,
+    "epochs": 30,
+    "patience": 10,
+    "preset": "finetune",
+    "data_dir": "data/trashnet",
+    "out": "/content/drive/MyDrive/alexnet-waste-results/finetune/seed1",
+    "batch_size": 32,
+    "num_workers": 2,
+    "seed": 1,
+    "device": "auto",
+    "cache_size": 256
+  },
+  "best_epoch": 23,
+  "epochs_run": 30,
+  "train_minutes": 1.4,
+  "num_params_m": 57.0,
+  "val_at_best": {
+    "epoch": 23,
+    "train_loss": 0.4962855723771182,
+    "train_acc": 0.9926136363636363,
+    "val_loss": 0.4052819183894566,
+    "val_acc": 0.9038461538461539,
+    "val_macro_f1": 0.8836220982842095
+  },
+  "test": {
+    "loss": 0.43479010238442367,
+    "accuracy": 0.8736559139784946,
+    "macro_f1": 0.8587174430880874,
+    "per_class": {
+      "cardboard": {
+        "precision": 0.9821428571428571,
+        "recall": 0.9322033898305084,
+        "f1": 0.9565217391304348,
+        "support": 59
+      },
+      "glass": {
+        "precision": 0.8333333333333334,
+        "recall": 0.8441558441558441,
+        "f1": 0.8387096774193549,
+        "support": 77
+      },
+      "metal": {
+        "precision": 0.8305084745762712,
+        "recall": 0.8305084745762712,
+        "f1": 0.8305084745762712,
+        "support": 59
+      },
+      "paper": {
+        "precision": 0.8811881188118812,
+        "recall": 0.9888888888888889,
+        "f1": 0.9319371727748691,
+        "support": 90
+      },
+      "plastic": {
+        "precision": 0.8666666666666667,
+        "recall": 0.7878787878787878,
+        "f1": 0.8253968253968254,
+        "support": 66
+      },
+      "trash": {
+        "precision": 0.8333333333333334,
+        "recall": 0.7142857142857143,
+        "f1": 0.7692307692307693,
+        "support": 21
+      }
+    },
+    "confusion_matrix": [
+      [
+        55,
+        0,
+        0,
+        3,
+        1,
+        0
+      ],
+      [
+        0,
+        65,
+        9,
+        1,
+        2,
+        0
+      ],
+      [
+        0,
+        8,
+        49,
+        0,
+        2,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        89,
+        0,
+        0
+      ],
+      [
+        0,
+        5,
+        0,
+        6,
+        52,
+        3
+      ],
+      [
+        0,
+        0,
+        1,
+        2,
+        3,
+        15
+      ]
+    ]
+  }
+}
