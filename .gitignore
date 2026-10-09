@@ -1,22 +1,19 @@
-# 报告、课程讲义与提交压缩包不公开
+# 本地文件：报告、课程讲义、提交压缩包
 *.pdf
 *.docx
 *.zip
 
-# Python / Jupyter
+# 数据集与训练产物
+data/
+*.pt
+*.pth
+*.joblib
+
+# Python 环境与缓存
+.venv/
 __pycache__/
 *.pyc
-.ipynb_checkpoints/
-
-# 训练产物（AlexNet 权重约 200 MB）
-*.pth
-
-.DS_Store
-
-# 数据集、虚拟环境与大模型文件
-data/
-.venv/
 *.egg-info/
-*.pt
-*.joblib
 .pytest_cache/
+.ipynb_checkpoints/
+.DS_Store

@@ -21,16 +21,14 @@ class AlexNet(nn.Module):
 
     With ``batch_norm=False`` the parameter names match
     ``torchvision.models.alexnet``, so ImageNet weights load directly.
-    ``batch_norm=True`` inserts BatchNorm after every convolution, which makes
-    training from scratch on a small dataset much less sensitive to the
-    learning rate.
+    ``batch_norm=True`` inserts BatchNorm after every convolution.
 
     ``init="kaiming"`` uses Kaiming-normal convolutions and N(0, 0.01) linear
     layers; ``init="default"`` keeps PyTorch's default initialisation, as the
     original course code did.
     """
 
-    def __init__(self, num_classes, dropout=0.5, batch_norm=False, init="kaiming"):
+    def __init__(self, num_classes, batch_norm=False, init="kaiming"):
         super().__init__()
         layers = []
         for c_in, c_out, kernel, stride, padding, pool in _CONV_CFG:
@@ -44,10 +42,10 @@ class AlexNet(nn.Module):
         # makes the classifier independent of the input resolution
         self.avgpool = nn.AdaptiveAvgPool2d((6, 6))
         self.classifier = nn.Sequential(
-            nn.Dropout(p=dropout),
+            nn.Dropout(0.5),
             nn.Linear(256 * 6 * 6, 4096),
             nn.ReLU(inplace=True),
-            nn.Dropout(p=dropout),
+            nn.Dropout(0.5),
             nn.Linear(4096, 4096),
             nn.ReLU(inplace=True),
             nn.Linear(4096, num_classes),
@@ -84,13 +82,13 @@ class AlexNet(nn.Module):
         return self.classifier(self.pool_flatten(self.features(x)))
 
 
-def build_model(name, num_classes, dropout=0.5, init="kaiming"):
+def build_model(name, num_classes, init="kaiming"):
     if name == "alexnet":
-        return AlexNet(num_classes, dropout, init=init)
+        return AlexNet(num_classes, init=init)
     if name == "alexnet_bn":
-        return AlexNet(num_classes, dropout, batch_norm=True, init=init)
+        return AlexNet(num_classes, batch_norm=True, init=init)
     if name == "alexnet_pretrained":
-        model = AlexNet(num_classes, dropout)
+        model = AlexNet(num_classes)
         state = AlexNet_Weights.IMAGENET1K_V1.get_state_dict(progress=True)
         # the 1000-way ImageNet head is replaced by a freshly initialised one
         state = {k: v for k, v in state.items() if not k.startswith("classifier.6.")}
@@ -99,16 +97,6 @@ def build_model(name, num_classes, dropout=0.5, init="kaiming"):
         assert not unexpected, unexpected
         return model
     raise ValueError(f"unknown model {name!r}, expected one of {MODEL_NAMES}")
-
-
-def head_parameters(model):
-    """Parameters of the final classification layer."""
-    return list(model.classifier[-1].parameters())
-
-
-def is_no_decay(name, param):
-    """Biases and normalisation parameters are excluded from weight decay."""
-    return param.ndim <= 1 or name.endswith(".bias")
 
 
 def load_checkpoint(path, device):

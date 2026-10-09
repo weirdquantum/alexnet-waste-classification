@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wastecls"
-version = "2.0.0"
+version = "3.0.0"
 description = "AlexNet waste image classification on COCO-format data (TrashNet)"
 requires-python = ">=3.10"
 dependencies = [

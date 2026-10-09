@@ -1,6 +1,6 @@
 """Evaluate a saved checkpoint on a COCO-format split.
 
-    python scripts/evaluate.py --checkpoint results/finetune/best.pt --split test
+    python scripts/evaluate.py --checkpoint results/finetune/seed0/best.pt --split test
 """
 
 import argparse
@@ -10,7 +10,7 @@ from pathlib import Path
 from torch import nn
 from torch.utils.data import DataLoader
 
-from wastecls.data import CocoCropDataset, build_transforms
+from wastecls.data import make_dataset
 from wastecls.engine import predict
 from wastecls.metrics import classification_metrics, plot_confusion_matrix
 from wastecls.models import load_checkpoint
@@ -28,13 +28,8 @@ def main():
     device = get_device(args.device)
     model, cfg, class_names = load_checkpoint(args.checkpoint, device)
 
-    root = Path(args.data_dir or cfg["data_dir"])
-    dataset = CocoCropDataset(
-        root / "images",
-        root / f"{args.split}.json",
-        build_transforms(cfg["img_size"], train=False, normalize=cfg["normalize"]),
-        # same two-step resize as during training, so metrics match exactly
-        cache_size=cfg.get("cache_size"),
+    dataset = make_dataset(
+        args.data_dir or cfg["data_dir"], args.split, cfg["img_size"], normalize=cfg["normalize"]
     )
     assert dataset.class_names == class_names, (dataset.class_names, class_names)
 

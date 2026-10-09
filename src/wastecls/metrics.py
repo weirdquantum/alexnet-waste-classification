@@ -1,8 +1,5 @@
 """Classification metrics and plots."""
 
-import matplotlib
-
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import precision_recall_fscore_support

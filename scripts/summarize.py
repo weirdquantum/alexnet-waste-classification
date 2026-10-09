@@ -52,7 +52,7 @@ def main():
         "| Model | Seeds | Test acc | Test macro-F1 | Val macro-F1 | Best epoch | Train (min) |",
         "|---|---|---|---|---|---|---|",
     ]
-    summary = {}
+    per_class_f1 = {}
     for name, rs in runs.items():
         acc = [r["test"]["accuracy"] for r in rs]
         f1 = [r["test"]["macro_f1"] for r in rs]
@@ -66,13 +66,8 @@ def main():
             f"| {LABELS[name]} | {len(rs)} | {fmt(acc)} | {fmt(f1)} | {fmt(val)} | "
             f"{epochs} | {minutes:.1f} |"
         )
-        summary[name] = {
-            "seeds": len(rs),
-            "test_acc": acc,
-            "test_macro_f1": f1,
-            "per_class_f1": {
-                c: [r["test"]["per_class"][c]["f1"] for r in rs] for c in class_names
-            },
+        per_class_f1[name] = {
+            c: np.mean([r["test"]["per_class"][c]["f1"] for r in rs]) for c in class_names
         }
 
     lines += [
@@ -82,15 +77,12 @@ def main():
         "| Model | " + " | ".join(class_names) + " |",
         "|---|" + "---|" * len(class_names),
     ]
-    for name, s in summary.items():
+    for name, f1s in per_class_f1.items():
         lines.append(
-            f"| {LABELS[name]} | "
-            + " | ".join(f"{100 * np.mean(s['per_class_f1'][c]):.1f}" for c in class_names)
-            + " |"
+            f"| {LABELS[name]} | " + " | ".join(f"{100 * f1s[c]:.1f}" for c in class_names) + " |"
         )
     text = "\n".join(lines) + "\n"
     (root / "summary.md").write_text(text)
-    (root / "summary.json").write_text(json.dumps(summary, indent=2))
     print(text)
 
 

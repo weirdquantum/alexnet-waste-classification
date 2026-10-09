@@ -95,7 +95,7 @@ SHA-256：`fb33e9d2e8b7d63fcd6321506939eb807ad160adba54ac864fe76f58bdc706db`。c
 | 6 | `model.py` / `ml_evaluate.py` | AlexNet 硬编码 7 类，数据只有 5 类；ML 基线又硬编码 5 类 | 类别数与数据不一致 |
 | 7 | `evaluate.py` vs `ml_evaluate.py` | 前者 `matrix[pred, true]`（行=预测），后者 `matrix[true, pred]`（行=真实） | 两个混淆矩阵方向相反，无法直接对比 |
 | 8 | `dataset.py` | 只把灰度图转成 RGB，RGBA / 调色板 / CMYK 图片会触发断言；bbox 没有裁剪到图像边界；打开的文件没有关闭 | 遇到非 RGB 图片或越界标注时崩溃 |
-| 9 | 各脚本 | 数据路径写成 `data/data_coco`（实际是 `data_coco/`），`dataset.py` 和 `utils/` 中硬编码 `/root/projects/...` | 无法直接运行 |
+| 9 | 各脚本 | 数据路径写成 `data/data_coco`（实际是 `data_coco/`），`dataset.py` 中硬编码 `/root/projects/...` | 无法直接运行 |
 | 10 | `submission/Data_Processing.py` | 从 annotation 读 `file_name`（COCO 中该字段在 `images` 里），且没有按 bbox 裁剪；路径 `'D:\Combined_COCO_Dataset\annotations.json'` 中的 `\a` 被 Python 解析成响铃字符 | `KeyError`，路径错误 |
 | 11 | `submission/Model_Training.py` | 用测试集挑选最佳模型 | 测试结果偏乐观 |
 | 12 | `submission/Performance_Evaluate.py` | 缺少 `import torch`，类别名是 `class_1`…`class_7` 占位符 | 无法单独运行，报告不可读 |
@@ -117,8 +117,8 @@ SHA-256：`fb33e9d2e8b7d63fcd6321506939eb807ad160adba54ac864fe76f58bdc706db`。c
 ## 改进
 
 - **数据**：完整 TrashNet 数据集（课程样例图片 `metal27.jpg` 等即来自 TrashNet）。删除标签冲突的重复图片，把同一物体的近重复照片归为一组后按组分层划分 70 / 15 / 15，同一物体不会同时出现在训练集和测试集。标注统一转成 COCO 格式，数据集类仍然按 bbox 裁剪，和课程任务一致。
-- **数据加载**：所有图片统一 `convert("RGB")`，bbox 裁剪到图像边界，类别 id 自动映射到 `0..K-1`，类别数从标注文件读取。
-- **训练**：修复最佳模型保存与 train/eval 模式；按验证集 macro-F1 选模型并早停，测试集只在最后评估一次；数据增强（RandomResizedCrop、翻转、颜色扰动）、ImageNet 均值方差归一化、AdamW（BN 和偏置不加 weight decay）+ label smoothing + warmup/cosine 学习率；多随机种子；支持 CUDA / Apple MPS / CPU。在 Linux 上把裁剪后的图片预先缩放并缓存在内存里，减轻 Colab 只有 2 个 CPU 时的数据加载瓶颈。
+- **数据加载**：所有图片统一 `convert("RGB")`，bbox 裁剪到图像边界，类别 id 自动映射到 `0..K-1`，类别数从标注文件读取。预处理固定为：按 bbox 裁剪 → 缩放到 256×256 → 训练时随机裁剪（开启数据增强时）、评估时缩放到 224×224（原课程配方为 219 → 192）；训练、评估、单图预测共用这一流程。
+- **训练**：修复最佳模型保存与 train/eval 模式；按验证集 macro-F1 选模型并早停，测试集只在最后评估一次；数据增强（RandomResizedCrop、翻转、颜色扰动）、ImageNet 均值方差归一化、AdamW（BN 和偏置不加 weight decay）+ label smoothing + warmup/cosine 学习率；多随机种子；支持 CUDA / Apple MPS / CPU。在 Linux 上把缩放后的裁剪图缓存在内存里（不改变像素，只影响速度），减轻 Colab 只有 2 个 CPU 时的数据加载瓶颈。
 - **模型**：同一个 `AlexNet` 类支持原版、加 BatchNorm、加载 ImageNet 预训练权重三种用法（参数名与 torchvision 一致），初始化方式可选。
 - **评估**：统一混淆矩阵方向（行=真实，列=预测），输出准确率、macro-F1、每类 precision / recall / F1，保存混淆矩阵和训练曲线图；Grad-CAM 可视化模型关注的区域；`predict.py` 可直接对任意图片分类。
 - **基线**：改成 sklearn Pipeline，PCA 只在训练集上拟合并保留 95% 方差；在验证集上调参；新增 RBF-SVM 对比。
@@ -129,9 +129,9 @@ SHA-256：`fb33e9d2e8b7d63fcd6321506939eb807ad160adba54ac864fe76f58bdc706db`。c
 ```
 .
 ├── src/wastecls/
-│   ├── data.py              # CocoCropDataset（按 bbox 裁剪、可选内存缓存）、数据增强、分层划分
+│   ├── data.py              # CocoCropDataset（按 bbox 裁剪、可选内存缓存）、预处理与数据增强、分层划分
 │   ├── models.py            # AlexNet / AlexNet-BN / ImageNet 预训练 AlexNet，checkpoint 加载
-│   ├── engine.py            # 训练与推理循环
+│   ├── engine.py            # 优化器、学习率调度、训练与推理循环
 │   ├── metrics.py           # 混淆矩阵、macro-F1、每类指标、绘图
 │   ├── dedup.py             # 标签冲突检测、近重复图片分组（并查集）
 │   ├── gradcam.py           # Grad-CAM
@@ -155,12 +155,12 @@ SHA-256：`fb33e9d2e8b7d63fcd6321506939eb807ad160adba54ac864fe76f58bdc706db`。c
 │   ├── hog_tree/  hog_svm/
 │   └── course/  scratch/  scratch_bn/  finetune/
 │       └── seed{0,1,2}/     # metrics.json、history.json、train.log、混淆矩阵、训练曲线（seed 0 另有 Grad-CAM）
-└── legacy/                  # 原始课程代码（代码未改动，供对比）
+└── legacy/                  # 原始课程代码（只保留与对比相关的文件，代码未改动）
+    ├── README.md            # 课程实验要求
     ├── experiment.ipynb     # 原实验 notebook（含当时的运行输出）
     ├── dataset.py  model.py  train.py  evaluate.py
-    ├── mlmodel.py  ml_evaluate.py  outputs/model.pkl
+    ├── mlmodel.py  ml_evaluate.py
     ├── data_coco/           # 课程样例数据（5 张图）
-    ├── utils/
     └── submission/          # 随报告提交的分模块代码
 ```
 

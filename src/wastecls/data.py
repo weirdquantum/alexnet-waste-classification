@@ -32,14 +32,16 @@ class CocoCropDataset(Dataset):
     the classifier's output size always equals the number of categories in the
     annotation file instead of being hard-coded.
 
-    With ``cache_size`` every crop is decoded and resized to
-    ``cache_size x cache_size`` once, up front, and kept in memory; DataLoader
-    workers then only run the augmentation, which matters on 2-CPU machines.
+    ``resize``: side of the square every crop is resized to before ``transform``
+    (None keeps the crop as is). ``cache=True`` keeps the resized crops in
+    memory, so DataLoader workers only run the augmentation; it changes speed,
+    never the pixels.
     """
 
-    def __init__(self, image_root, annotation_file, transform=None, cache_size=None):
+    def __init__(self, image_root, annotation_file, transform=None, resize=None, cache=False):
         self.image_root = Path(image_root)
         self.transform = transform
+        self.resize = resize
         with open(annotation_file) as f:
             coco = json.load(f)
 
@@ -56,20 +58,13 @@ class CocoCropDataset(Dataset):
             for ann in coco["annotations"]
         ]
         self._cache = None
-        if cache_size:
-            self._cache = np.stack(
-                [
-                    np.asarray(self._read_crop(i).resize((cache_size, cache_size)))
-                    for i in range(len(self.samples))
-                ]
-            )
+        if cache:
+            if resize is None:
+                raise ValueError("cache=True needs a fixed resize")
+            self._cache = np.stack([np.asarray(self._read_crop(i)) for i in range(len(self))])
 
     def __len__(self):
         return len(self.samples)
-
-    @property
-    def num_classes(self):
-        return len(self.class_names)
 
     @property
     def labels(self):
@@ -84,14 +79,33 @@ class CocoCropDataset(Dataset):
         file_name, bbox, _ = self.samples[index]
         with Image.open(self.image_root / file_name) as img:
             # convert() also handles grayscale, palette, RGBA and CMYK images
-            img = img.convert("RGB")
-        return crop_bbox(img, bbox)
+            img = crop_bbox(img.convert("RGB"), bbox)
+        return img.resize((self.resize, self.resize)) if self.resize else img
 
     def __getitem__(self, index):
         img = self.load_crop(index)
         if self.transform is not None:
             img = self.transform(img)
         return img, self.samples[index][2]
+
+
+def pre_resize(img_size):
+    """Crops are squashed to this square size first (256 for 224 px inputs),
+    then randomly cropped (training) or resized (evaluation) to ``img_size``."""
+    return round(img_size * 8 / 7)
+
+
+def make_dataset(data_dir, split, img_size, train=False, augment=True, normalize="imagenet",
+                 cache=False):
+    """``<data_dir>/<split>.json`` with the preprocessing used in all experiments."""
+    root = Path(data_dir)
+    return CocoCropDataset(
+        root / "images",
+        root / f"{split}.json",
+        build_transforms(img_size, train, augment, normalize),
+        resize=pre_resize(img_size),
+        cache=cache,
+    )
 
 
 def build_transforms(img_size, train, augment=True, normalize="imagenet"):

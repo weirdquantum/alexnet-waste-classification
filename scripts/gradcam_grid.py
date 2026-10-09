@@ -7,14 +7,11 @@ prediction and the most confident mistake. Saved next to the checkpoint.
 import argparse
 from pathlib import Path
 
-import matplotlib
-
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import torch
 from torch.utils.data import DataLoader
 
-from wastecls.data import CocoCropDataset, build_transforms
+from wastecls.data import make_dataset
 from wastecls.gradcam import gradcam
 from wastecls.models import load_checkpoint
 from wastecls.utils import get_device
@@ -31,12 +28,8 @@ def main():
 
     device = get_device(args.device)
     model, cfg, class_names = load_checkpoint(args.checkpoint, device)
-    root = Path(args.data_dir or cfg["data_dir"])
-    dataset = CocoCropDataset(
-        root / "images",
-        root / f"{args.split}.json",
-        build_transforms(cfg["img_size"], train=False, normalize=cfg["normalize"]),
-        cache_size=cfg.get("cache_size"),
+    dataset = make_dataset(
+        args.data_dir or cfg["data_dir"], args.split, cfg["img_size"], normalize=cfg["normalize"]
     )
 
     with torch.no_grad():

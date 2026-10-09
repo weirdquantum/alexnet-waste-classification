@@ -115,6 +115,7 @@ def main():
     # 2. group photos of the same object
     features = None
     if args.dedup_threshold > 0:
+        # plain 224 px resize; changing it would change the features and the split
         dataset = CocoCropDataset(image_dir, out / "all.json", build_transforms(224, train=False))
         features = embed(dataset, get_device(args.device))
     pairs = similar_pairs(features, labels, args.dedup_threshold, digests)

@@ -6,14 +6,11 @@
 
 import argparse
 
-import matplotlib
-
-matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import torch
 from PIL import Image
 
-from wastecls.data import build_transforms
+from wastecls.data import build_transforms, pre_resize
 from wastecls.gradcam import gradcam
 from wastecls.models import load_checkpoint
 from wastecls.utils import get_device
@@ -36,12 +33,17 @@ def main():
     pils, batch = [], []
     for path in args.images:
         with Image.open(path) as img:
-            img = img.convert("RGB")
+            # same preprocessing as in training and evaluation
+            img = img.convert("RGB").resize((pre_resize(size),) * 2)
         pils.append(img.resize((size, size)))
         batch.append(transform(img))
     batch = torch.stack(batch).to(device)
 
-    cams, logits = gradcam(model, batch)
+    if args.gradcam:
+        cams, logits = gradcam(model, batch)
+    else:
+        with torch.no_grad():
+            logits = model(batch)
     probs = logits.softmax(1).cpu()
     for path, p in zip(args.images, probs):
         top = p.topk(min(args.top_k, len(class_names)))
