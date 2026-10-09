@@ -31,9 +31,13 @@ class CocoCropDataset(Dataset):
     Category ids are remapped to contiguous labels ``0..K-1`` (sorted by id), so
     the classifier's output size always equals the number of categories in the
     annotation file instead of being hard-coded.
+
+    With ``cache_size`` every crop is decoded and resized to
+    ``cache_size x cache_size`` once, up front, and kept in memory; DataLoader
+    workers then only run the augmentation, which matters on 2-CPU machines.
     """
 
-    def __init__(self, image_root, annotation_file, transform=None):
+    def __init__(self, image_root, annotation_file, transform=None, cache_size=None):
         self.image_root = Path(image_root)
         self.transform = transform
         with open(annotation_file) as f:
@@ -51,6 +55,14 @@ class CocoCropDataset(Dataset):
             )
             for ann in coco["annotations"]
         ]
+        self._cache = None
+        if cache_size:
+            self._cache = np.stack(
+                [
+                    np.asarray(self._read_crop(i).resize((cache_size, cache_size)))
+                    for i in range(len(self.samples))
+                ]
+            )
 
     def __len__(self):
         return len(self.samples)
@@ -64,6 +76,11 @@ class CocoCropDataset(Dataset):
         return [label for _, _, label in self.samples]
 
     def load_crop(self, index) -> Image.Image:
+        if self._cache is not None:
+            return Image.fromarray(self._cache[index])
+        return self._read_crop(index)
+
+    def _read_crop(self, index) -> Image.Image:
         file_name, bbox, _ = self.samples[index]
         with Image.open(self.image_root / file_name) as img:
             # convert() also handles grayscale, palette, RGBA and CMYK images

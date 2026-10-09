@@ -1,10 +1,14 @@
-"""Collect results/*/metrics.json into a markdown table (results/summary.md).
+"""Collect results/<run>/[seed*/]metrics.json into results/summary.md (mean ± std over seeds).
 
-    python scripts/summarize.py
+    python scripts/summarize.py [--results-dir results]
 """
 
+import argparse
 import json
+import sys
 from pathlib import Path
+
+import numpy as np
 
 ORDER = ["hog_tree", "hog_svm", "course", "scratch", "scratch_bn", "finetune"]
 LABELS = {
@@ -17,41 +21,76 @@ LABELS = {
 }
 
 
-def main():
+def fmt(values, scale=100):
+    values = scale * np.asarray(values)
+    if len(values) == 1:
+        return f"{values[0]:.1f}"
+    return f"{values.mean():.1f} ± {values.std(ddof=1):.1f}"
+
+
+def load_runs(root):
     runs = {}
-    for path in Path("results").glob("*/metrics.json"):
-        runs[path.parent.name] = json.loads(path.read_text())
-    names = [n for n in ORDER if n in runs]
-    class_names = list(runs[names[0]]["test"]["per_class"])
+    for name in ORDER:
+        paths = sorted((root / name).glob("seed*/metrics.json")) or sorted(
+            (root / name).glob("metrics.json")
+        )
+        if paths:
+            runs[name] = [json.loads(p.read_text()) for p in paths]
+    return runs
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--results-dir", default="results")
+    root = Path(parser.parse_args().results_dir)
+    runs = load_runs(root)
+    if not runs:
+        sys.exit(f"no {root}/*/metrics.json found; run the training scripts first")
+    class_names = list(next(iter(runs.values()))[0]["test"]["per_class"])
 
     lines = [
-        "| Model | Test acc | Test macro-F1 | Val macro-F1 | Best epoch | Train (min) |",
-        "|---|---|---|---|---|---|",
+        "| Model | Seeds | Test acc | Test macro-F1 | Val macro-F1 | Best epoch | Train (min) |",
+        "|---|---|---|---|---|---|---|",
     ]
-    for name in names:
-        r = runs[name]
-        epoch = f"{r['best_epoch']} / {r['epochs_run']}" if "best_epoch" in r else "–"
-        lines.append(
-            f"| {LABELS[name]} | {100 * r['test']['accuracy']:.1f} | "
-            f"{100 * r['test']['macro_f1']:.1f} | {100 * r['val_at_best']['val_macro_f1']:.1f} | "
-            f"{epoch} | {r['train_minutes']} |"
+    summary = {}
+    for name, rs in runs.items():
+        acc = [r["test"]["accuracy"] for r in rs]
+        f1 = [r["test"]["macro_f1"] for r in rs]
+        val = [r["val_at_best"]["val_macro_f1"] for r in rs]
+        epochs = (
+            ", ".join(f"{r['best_epoch']}/{r['epochs_run']}" for r in rs)
+            if "best_epoch" in rs[0] else "–"
         )
+        minutes = np.mean([r["train_minutes"] for r in rs])
+        lines.append(
+            f"| {LABELS[name]} | {len(rs)} | {fmt(acc)} | {fmt(f1)} | {fmt(val)} | "
+            f"{epochs} | {minutes:.1f} |"
+        )
+        summary[name] = {
+            "seeds": len(rs),
+            "test_acc": acc,
+            "test_macro_f1": f1,
+            "per_class_f1": {
+                c: [r["test"]["per_class"][c]["f1"] for r in rs] for c in class_names
+            },
+        }
+
     lines += [
         "",
-        "Per-class test F1 (%):",
+        "Per-class test F1 (%, mean over seeds):",
         "",
         "| Model | " + " | ".join(class_names) + " |",
         "|---|" + "---|" * len(class_names),
     ]
-    for name in names:
-        per_class = runs[name]["test"]["per_class"]
+    for name, s in summary.items():
         lines.append(
             f"| {LABELS[name]} | "
-            + " | ".join(f"{100 * per_class[c]['f1']:.1f}" for c in class_names)
+            + " | ".join(f"{100 * np.mean(s['per_class_f1'][c]):.1f}" for c in class_names)
             + " |"
         )
     text = "\n".join(lines) + "\n"
-    Path("results/summary.md").write_text(text)
+    (root / "summary.md").write_text(text)
+    (root / "summary.json").write_text(json.dumps(summary, indent=2))
     print(text)
 
 

@@ -1,5 +1,6 @@
 """AlexNet variants used in the experiments."""
 
+import torch
 import torch.nn as nn
 from torchvision.models import AlexNet_Weights
 
@@ -23,9 +24,13 @@ class AlexNet(nn.Module):
     ``batch_norm=True`` inserts BatchNorm after every convolution, which makes
     training from scratch on a small dataset much less sensitive to the
     learning rate.
+
+    ``init="kaiming"`` uses Kaiming-normal convolutions and N(0, 0.01) linear
+    layers; ``init="default"`` keeps PyTorch's default initialisation, as the
+    original course code did.
     """
 
-    def __init__(self, num_classes, dropout=0.5, batch_norm=False):
+    def __init__(self, num_classes, dropout=0.5, batch_norm=False, init="kaiming"):
         super().__init__()
         layers = []
         for c_in, c_out, kernel, stride, padding, pool in _CONV_CFG:
@@ -47,7 +52,10 @@ class AlexNet(nn.Module):
             nn.ReLU(inplace=True),
             nn.Linear(4096, num_classes),
         )
-        self._init_weights()
+        if init == "kaiming":
+            self._init_weights()
+        elif init != "default":
+            raise ValueError(f"unknown init {init!r}")
 
     def _init_weights(self):
         for m in self.modules():
@@ -62,23 +70,25 @@ class AlexNet(nn.Module):
                 nn.init.normal_(m.weight, 0, 0.01)
                 nn.init.zeros_(m.bias)
 
-    def forward(self, x):
-        x = self.features(x)
+    def pool_flatten(self, x):
+        """Feature map -> flat 256*6*6 vector for the classifier."""
         if x.device.type == "mps" and (x.shape[-2] % 6 or x.shape[-1] % 6):
             # MPS only supports adaptive pooling between divisible sizes
             # (e.g. 192 px inputs give 5x5 feature maps); pool on the CPU instead
             x = self.avgpool(x.cpu()).to(x.device)
         else:
             x = self.avgpool(x)
-        x = x.flatten(1)
-        return self.classifier(x)
+        return x.flatten(1)
+
+    def forward(self, x):
+        return self.classifier(self.pool_flatten(self.features(x)))
 
 
-def build_model(name, num_classes, dropout=0.5):
+def build_model(name, num_classes, dropout=0.5, init="kaiming"):
     if name == "alexnet":
-        return AlexNet(num_classes, dropout)
+        return AlexNet(num_classes, dropout, init=init)
     if name == "alexnet_bn":
-        return AlexNet(num_classes, dropout, batch_norm=True)
+        return AlexNet(num_classes, dropout, batch_norm=True, init=init)
     if name == "alexnet_pretrained":
         model = AlexNet(num_classes, dropout)
         state = AlexNet_Weights.IMAGENET1K_V1.get_state_dict(progress=True)
@@ -94,3 +104,21 @@ def build_model(name, num_classes, dropout=0.5):
 def head_parameters(model):
     """Parameters of the final classification layer."""
     return list(model.classifier[-1].parameters())
+
+
+def is_no_decay(name, param):
+    """Biases and normalisation parameters are excluded from weight decay."""
+    return param.ndim <= 1 or name.endswith(".bias")
+
+
+def load_checkpoint(path, device):
+    """Rebuild a trained model from a ``train.py`` checkpoint.
+
+    Returns ``(model in eval mode, training config, class names)``.
+    """
+    ckpt = torch.load(path, map_location=device, weights_only=True)
+    cfg, class_names = ckpt["config"], ckpt["class_names"]
+    # architecture only; the weights (pretrained or not) come from the checkpoint
+    model = AlexNet(len(class_names), batch_norm=cfg["model"] == "alexnet_bn", init="default")
+    model.load_state_dict(ckpt["model"])
+    return model.to(device).eval(), cfg, class_names

@@ -1,12 +1,13 @@
 """Train an AlexNet variant, select the best epoch on val, evaluate once on test.
 
-    python scripts/train.py --preset finetune
+    python scripts/train.py --preset finetune --seed 0     # -> results/finetune/seed0/
     python scripts/train.py --preset scratch_bn --epochs 100   # flags override the preset
 """
 
 import argparse
 import json
 import math
+import multiprocessing
 import time
 from pathlib import Path
 
@@ -17,13 +18,15 @@ from torch.utils.data import DataLoader
 from wastecls.data import CocoCropDataset, build_transforms
 from wastecls.engine import predict, train_one_epoch
 from wastecls.metrics import classification_metrics, plot_confusion_matrix, plot_history
-from wastecls.models import MODEL_NAMES, build_model, head_parameters
+from wastecls.models import MODEL_NAMES, build_model, head_parameters, is_no_decay
 from wastecls.utils import get_device, seed_everything
 
 PRESETS = {
-    # the original course recipe: 192 px, pixels / 255, no augmentation, Adam 1e-3
+    # the original course recipe: 192 px, pixels / 255, no augmentation, Adam 1e-3,
+    # PyTorch default initialisation
     "course": dict(
-        model="alexnet", img_size=192, normalize="unit", augment=False, optimizer="adam",
+        model="alexnet", init="default", img_size=192, normalize="unit", augment=False,
+        optimizer="adam",
         lr=1e-3, weight_decay=0.0, label_smoothing=0.0, scheduler="none", warmup_epochs=0,
         epochs=30, patience=0,
     ),
@@ -51,6 +54,7 @@ def parse_args():
     parser.add_argument("--data-dir", default="data/trashnet")
     parser.add_argument("--out", help="output dir (default: results/<preset>)")
     parser.add_argument("--model", choices=MODEL_NAMES)
+    parser.add_argument("--init", choices=["kaiming", "default"])
     parser.add_argument("--img-size", type=int)
     parser.add_argument("--normalize", choices=["unit", "imagenet"])
     parser.add_argument("--augment", action=argparse.BooleanOptionalAction)
@@ -65,13 +69,23 @@ def parse_args():
     parser.add_argument("--patience", type=int, help="early stopping; 0 disables")
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--num-workers", type=int, default=4)
+    parser.add_argument(
+        "--cache-size", type=int,
+        help="pre-resize crops to this size in memory (default: img_size * 8/7 when "
+        "DataLoader workers are forked, e.g. on Linux/Colab; otherwise 0 = disabled)",
+    )
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--device", default="auto")
     args = parser.parse_args()
 
-    config = {"head_lr_mult": 1.0, **PRESETS[args.preset]}
+    config = {"head_lr_mult": 1.0, "init": "kaiming", **PRESETS[args.preset]}
     config.update({k: v for k, v in vars(args).items() if v is not None})
-    config["out"] = config.get("out") or f"results/{args.preset}"
+    config["out"] = config.get("out") or f"results/{args.preset}/seed{args.seed}"
+    if config.get("cache_size") is None:
+        # forked workers share the cache copy-on-write; spawned workers (macOS,
+        # Windows) would each receive a pickled copy of it, so skip it there
+        shared = config["num_workers"] == 0 or multiprocessing.get_start_method() == "fork"
+        config["cache_size"] = round(config["img_size"] * 8 / 7) if shared else 0
     return config
 
 
@@ -81,6 +95,7 @@ def make_loader(cfg, split, train):
         root / "images",
         root / f"{split}.json",
         build_transforms(cfg["img_size"], train, cfg["augment"], cfg["normalize"]),
+        cache_size=cfg["cache_size"],
     )
     loader = DataLoader(
         dataset,
@@ -94,17 +109,30 @@ def make_loader(cfg, split, train):
 
 
 def make_optimizer(cfg, model):
-    head = head_parameters(model)
-    head_ids = {id(p) for p in head}
-    groups = [
-        {"params": [p for p in model.parameters() if id(p) not in head_ids], "lr": cfg["lr"]},
-        {"params": head, "lr": cfg["lr"] * cfg["head_lr_mult"]},
-    ]
+    """Four parameter groups: (backbone | head) x (decay | no decay).
+
+    Biases and BatchNorm parameters get no weight decay; the classification
+    head can get a larger learning rate (``head_lr_mult``) when fine-tuning.
+    """
+    head_ids = {id(p) for p in head_parameters(model)}
+    groups = {}
+    for name, param in model.named_parameters():
+        is_head = id(param) in head_ids
+        no_decay = is_no_decay(name, param)
+        key = (is_head, no_decay)
+        if key not in groups:
+            groups[key] = {
+                "params": [],
+                "lr": cfg["lr"] * (cfg["head_lr_mult"] if is_head else 1.0),
+                "weight_decay": 0.0 if no_decay else cfg["weight_decay"],
+            }
+        groups[key]["params"].append(param)
+    groups = list(groups.values())
     if cfg["optimizer"] == "adam":
-        return torch.optim.Adam(groups, weight_decay=cfg["weight_decay"])
+        return torch.optim.Adam(groups)
     if cfg["optimizer"] == "adamw":
-        return torch.optim.AdamW(groups, weight_decay=cfg["weight_decay"])
-    return torch.optim.SGD(groups, momentum=0.9, nesterov=True, weight_decay=cfg["weight_decay"])
+        return torch.optim.AdamW(groups)
+    return torch.optim.SGD(groups, momentum=0.9, nesterov=True)
 
 
 def make_scheduler(cfg, optimizer, steps_per_epoch):
@@ -134,7 +162,7 @@ def main():
     assert val_set.class_names == class_names
     print(f"device={device}  train={len(train_set)}  val={len(val_set)}  classes={class_names}")
 
-    model = build_model(cfg["model"], len(class_names)).to(device)
+    model = build_model(cfg["model"], len(class_names), init=cfg["init"]).to(device)
     criterion = nn.CrossEntropyLoss(label_smoothing=cfg["label_smoothing"])
     eval_criterion = nn.CrossEntropyLoss()
     optimizer = make_optimizer(cfg, model)
@@ -186,6 +214,7 @@ def main():
 
     results = {
         "preset": cfg["preset"],
+        "seed": cfg["seed"],
         "config": cfg,
         "best_epoch": ckpt["epoch"],
         "epochs_run": len(history),
@@ -196,9 +225,9 @@ def main():
     }
     (out / "metrics.json").write_text(json.dumps(results, indent=2))
     (out / "history.json").write_text(json.dumps(history, indent=2))
-    title = f"{cfg['preset']}: test acc {test['accuracy']:.3f}, macro-F1 {test['macro_f1']:.3f}"
+    title = f"{cfg['preset']} seed {cfg['seed']}: test acc {test['accuracy']:.3f}, macro-F1 {test['macro_f1']:.3f}"
     plot_confusion_matrix(test["confusion_matrix"], class_names, out / "confusion_matrix.png", title)
-    plot_history(history, out / "curves.png", cfg["preset"])
+    plot_history(history, out / "curves.png", f"{cfg['preset']} (seed {cfg['seed']})")
     print(f"best epoch {ckpt['epoch']}  test acc {test['accuracy']:.4f}  macro-F1 {test['macro_f1']:.4f}")
 
 

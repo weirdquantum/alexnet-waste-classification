@@ -7,14 +7,13 @@ import argparse
 import json
 from pathlib import Path
 
-import torch
 from torch import nn
 from torch.utils.data import DataLoader
 
 from wastecls.data import CocoCropDataset, build_transforms
 from wastecls.engine import predict
 from wastecls.metrics import classification_metrics, plot_confusion_matrix
-from wastecls.models import AlexNet
+from wastecls.models import load_checkpoint
 from wastecls.utils import get_device
 
 
@@ -27,21 +26,18 @@ def main():
     args = parser.parse_args()
 
     device = get_device(args.device)
-    ckpt = torch.load(args.checkpoint, map_location=device, weights_only=True)
-    cfg = ckpt["config"]
-    class_names = ckpt["class_names"]
+    model, cfg, class_names = load_checkpoint(args.checkpoint, device)
 
     root = Path(args.data_dir or cfg["data_dir"])
     dataset = CocoCropDataset(
         root / "images",
         root / f"{args.split}.json",
         build_transforms(cfg["img_size"], train=False, normalize=cfg["normalize"]),
+        # same two-step resize as during training, so metrics match exactly
+        cache_size=cfg.get("cache_size"),
     )
     assert dataset.class_names == class_names, (dataset.class_names, class_names)
 
-    # architecture only; the weights come from the checkpoint
-    model = AlexNet(len(class_names), batch_norm=cfg["model"] == "alexnet_bn").to(device)
-    model.load_state_dict(ckpt["model"])
     loader = DataLoader(dataset, batch_size=64)
     preds, targets, loss = predict(model, loader, nn.CrossEntropyLoss(), device)
     metrics = {"loss": loss, **classification_metrics(targets, preds, class_names)}
