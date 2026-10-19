@@ -5,10 +5,11 @@
 
 本科课程 **UESTC 3002: Artificial Intelligence & Machine Learning**（2024–2025 秋季学期）的 Lab Project：用 PyTorch 实现 AlexNet，对 COCO 格式标注的垃圾图像做分类，并与传统机器学习基线（HOG + PCA + 决策树）对比。
 
-在原课程代码的基础上做了两轮代码审查和重构（原始代码保留在 [`legacy/`](legacy/)）：
+项目共三个版本：v1 是原课程提交，v2、v3 是在此基础上做的两轮代码审查和重构（v1 代码保留在 [`legacy/`](legacy/)）：
 
-- **v2**：修复原版的数据泄漏、"最佳模型"保存逻辑、混淆矩阵方向不一致等 15 个问题；换用完整的 [TrashNet](https://github.com/garythung/trashnet) 数据集（6 类）；对比四种 AlexNet 训练配置和两个传统基线。
-- **v3**：修复 v2 自查发现的问题——删除标签冲突的图片，把同一物体的近重复照片归组后再划分，消除训练集和测试集之间的泄漏；BN 和偏置不加权重衰减；每个配置跑 3 个随机种子。新增 Grad-CAM、单图预测、端到端测试和 CI。
+- **v1（2025 年 1 月课程提交）**：使用课程提供的 Combined COCO 数据集。该数据集由全年级同学拍摄自己的物品、用 Labelme 标注后汇总而成，共 7 类（讲义中列出的有 food、electronics、metal、paper、plastic、cardboard 等）。这份数据集没有公开，仓库只保留了课程代码包里的 5 张样例图（[`legacy/data_coco/`](legacy/data_coco/)）。
+- **v2**：修复原版的数据泄漏、"最佳模型"保存逻辑、混淆矩阵方向不一致等 15 个问题；由于原课程数据集无法公开，改用公开的 [TrashNet](https://github.com/garythung/trashnet) 数据集（6 类，2527 张）；对比四种 AlexNet 训练配置和两个传统基线。
+- **v3**：仍使用 TrashNet，修复 v2 自查发现的问题——删除标签冲突的图片，把同一物体的近重复照片归组后再划分，消除训练集和测试集之间的泄漏；BN 和偏置不加权重衰减；每个配置跑 3 个随机种子。新增 Grad-CAM、单图预测、端到端测试和 CI。
 
 **最佳结果（ImageNet 预训练 AlexNet 微调，3 个随机种子）：测试集准确率 86.7 ± 0.6%，macro-F1 85.6 ± 0.2%。** 同样的 AlexNet 用原课程训练配方只有 24.2%（全部预测成 paper 一类）；只改训练配方、从零训练可达 80.4 ± 0.5%。训练好的权重可以直接[下载](#预训练权重)。
 
@@ -18,7 +19,7 @@
 
 ## 结果
 
-数据：TrashNet 2521 张（删除 6 张标签冲突的图片），把同一物体的照片归组后按组分层划分为 train 1785 / val 364 / test 372。测试集各类：cardboard 59 / glass 77 / metal 59 / paper 90 / plastic 66 / trash 21。
+数据（v2 / v3）：TrashNet 2521 张（删除 6 张标签冲突的图片），把同一物体的照片归组后按组分层划分为 train 1785 / val 364 / test 372。测试集各类：cardboard 59 / glass 77 / metal 59 / paper 90 / plastic 66 / trash 21。
 
 在 Colab T4 GPU 上运行。每个配置按验证集 macro-F1 选最佳 epoch，测试集只在最后评估一次。CNN 为 3 个随机种子的均值 ± 标准差；传统基线是确定性的，只跑一次。数值为百分比。
 
@@ -88,11 +89,11 @@ SHA-256：`fb33e9d2e8b7d63fcd6321506939eb807ad160adba54ac864fe76f58bdc706db`。c
 | # | 位置 | 问题 | 影响 |
 |---|---|---|---|
 | 1 | `train.py` / `evaluate.py` / notebook | 训练、验证、测试都读同一份 `annotations.json` | 数据泄漏，notebook 中的 100% 测试准确率没有意义 |
-| 2 | `data_coco/` | 每类只有 1 张图，共 5 张 | 无法训练和评估 |
+| 2 | `data_coco/` | 课程代码包自带的样例数据只有 5 张图（每类 1 张），模板 notebook 就是在这 5 张图上训练和测试的 | 无法据此训练和评估模型；完整的课程数据集未随仓库公开 |
 | 3 | `train.py` | `best_accuracy = 0` 写在 epoch 循环内部，每轮被重置 | 每轮都会覆盖保存，"best_model.pth" 实际是最后一轮 |
 | 4 | `train.py` | 没有 `model.train()` / `model.eval()` 切换 | 验证时 Dropout 仍然开启，验证结果偏低且有随机性 |
 | 5 | 原训练配方 | 输入只除以 255、无数据增强、无 BatchNorm、Adam lr=1e-3 从零训练 | notebook 日志中 loss 停在 1.85 左右（7 类随机猜测为 ln 7 ≈ 1.95），验证准确率在 0–40% 间波动，模型基本没有学到东西 |
-| 6 | `model.py` / `ml_evaluate.py` | AlexNet 硬编码 7 类，数据只有 5 类；ML 基线又硬编码 5 类 | 类别数与数据不一致 |
+| 6 | `model.py` / `ml_evaluate.py` | AlexNet 硬编码 7 类（完整课程数据集的类别数），样例数据只有 5 类；ML 基线又硬编码 5 类 | 类别数写死在代码里，与实际加载的数据不一致，换数据集就会出错 |
 | 7 | `evaluate.py` vs `ml_evaluate.py` | 前者 `matrix[pred, true]`（行=预测），后者 `matrix[true, pred]`（行=真实） | 两个混淆矩阵方向相反，无法直接对比 |
 | 8 | `dataset.py` | 只把灰度图转成 RGB，RGBA / 调色板 / CMYK 图片会触发断言；bbox 没有裁剪到图像边界；打开的文件没有关闭 | 遇到非 RGB 图片或越界标注时崩溃 |
 | 9 | 各脚本 | 数据路径写成 `data/data_coco`（实际是 `data_coco/`），`dataset.py` 中硬编码 `/root/projects/...` | 无法直接运行 |
@@ -116,7 +117,7 @@ SHA-256：`fb33e9d2e8b7d63fcd6321506939eb807ad160adba54ac864fe76f58bdc706db`。c
 
 ## 改进
 
-- **数据**：完整 TrashNet 数据集（课程样例图片 `metal27.jpg` 等即来自 TrashNet）。删除标签冲突的重复图片，把同一物体的近重复照片归为一组后按组分层划分 70 / 15 / 15，同一物体不会同时出现在训练集和测试集。标注统一转成 COCO 格式，数据集类仍然按 bbox 裁剪，和课程任务一致。
+- **数据**：v1 使用的课程数据集未公开，v2 / v3 改用公开的完整 TrashNet 数据集（课程代码包里的 5 张样例图 `metal27.jpg` 等也取自 TrashNet）。删除标签冲突的重复图片，把同一物体的近重复照片归为一组后按组分层划分 70 / 15 / 15，同一物体不会同时出现在训练集和测试集。标注统一转成 COCO 格式，数据集类仍然按 bbox 裁剪，和课程任务一致。
 - **数据加载**：所有图片统一 `convert("RGB")`，bbox 裁剪到图像边界，类别 id 自动映射到 `0..K-1`，类别数从标注文件读取。预处理固定为：按 bbox 裁剪 → 缩放到 256×256 → 训练时随机裁剪（开启数据增强时）、评估时缩放到 224×224（原课程配方为 219 → 192）；训练、评估、单图预测共用这一流程。
 - **训练**：修复最佳模型保存与 train/eval 模式；按验证集 macro-F1 选模型并早停，测试集只在最后评估一次；数据增强（RandomResizedCrop、翻转、颜色扰动）、ImageNet 均值方差归一化、AdamW（BN 和偏置不加 weight decay）+ label smoothing + warmup/cosine 学习率；多随机种子；支持 CUDA / Apple MPS / CPU。在 Linux 上把缩放后的裁剪图缓存在内存里（不改变像素，只影响速度），减轻 Colab 只有 2 个 CPU 时的数据加载瓶颈。
 - **模型**：同一个 `AlexNet` 类支持原版、加 BatchNorm、加载 ImageNet 预训练权重三种用法（参数名与 torchvision 一致），初始化方式可选。
@@ -160,7 +161,7 @@ SHA-256：`fb33e9d2e8b7d63fcd6321506939eb807ad160adba54ac864fe76f58bdc706db`。c
     ├── experiment.ipynb     # 原实验 notebook（含当时的运行输出）
     ├── dataset.py  model.py  train.py  evaluate.py
     ├── mlmodel.py  ml_evaluate.py
-    ├── data_coco/           # 课程样例数据（5 张图）
+    ├── data_coco/           # 课程代码包中的样例数据（5 张图；完整课程数据集未公开）
     └── submission/          # 随报告提交的分模块代码
 ```
 
@@ -201,6 +202,7 @@ python scripts/gradcam_grid.py --checkpoint results/finetune/seed0/best.pt
 
 ## 局限
 
+- v2 / v3 只在 TrashNet 上评估，没有在 v1 使用的课程数据集（7 类，包含 food、electronics，由同学自行拍摄）上验证，结论能否迁移到该数据集未知。
 - TrashNet 没有物体编号，"同一物体"是用特征相似度推断的。相似度低于 0.85 的同一物体照片（例如角度差别很大时）仍可能分到不同划分，测试结果可能略微偏高。
 - 只有一个固定的数据划分；种子间的标准差不包含测试集抽样带来的误差（约 ±1.8 个百分点）。
 - 每张图只有一个物体、背景单一，模型在真实场景（杂乱背景、多物体）中的效果需要另行验证。
